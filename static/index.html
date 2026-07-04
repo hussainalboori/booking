@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Automation AI Dashboard</title>
+    <!-- Modern Premium Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(22, 30, 49, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent-color: #8b5cf6;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge-live {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.1fr 1.9fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 0.75rem;
+        }
+
+        /* Simulator Left Panel Styling */
+        .simulator-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .quick-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .quick-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.75rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .btn-submit {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.95;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .response-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: none;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .resp-meta {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-category { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+        .badge-status { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-priority { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        .response-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-color);
+            margin-top: 0.5rem;
+        }
+
+        /* Monitor Right Panel Styling */
+        .monitor-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .grid-stats {
+            display: grid;
+            grid-template-columns: 1.2fr 1.8fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .capacity-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .capacity-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .slot-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .slot-tag {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 0.35rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .active-bookings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .booking-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .booking-details h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .booking-details p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .booking-slot {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .logs-card {
+            flex: 1;
+        }
+
+        .logs-table-container {
+            width: 100%;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+        }
+
+        .td-message {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-approve {
+            background: var(--success);
+            border: none;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-approve:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border-left-color: white;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>✨</span> Booking Automation AI
+        </div>
+        <div class="badge-live">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--success); display: inline-block;"></span>
+            System Live
+        </div>
+    </header>
+
+    <main>
+        <!-- Left Column: Request Simulator -->
+        <div class="simulator-section">
+            <div class="card">
+                <h2>Customer Service Simulator</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    Simulate customer messages directly. Choose a template scenario to auto-fill or enter a custom query.
+                </p>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="fillMessage(1)">
+                        📅 VIP Cancel (John Doe)
+                    </button>
+                    <button class="quick-btn" onclick="fillMessage(2)">
+                        ⚡ Earliest Booking Today
+                    </button>
+                    <button class="quick-btn" onclick="fillMessage(3)">
+                        💸 Double Charge ($35)
+                    </button>
+                    <button class="quick-btn" onclick="fillMessage(4)">
+                        💰 Double Charge ($120)
+                    </button>
+                    <button class="quick-btn" onclick="fillMessage(5)">
+                        🏷️ Simple Pricing Query
+                    </button>
+                    <button class="quick-btn" onclick="fillMessage(6)">
+                        🔥 Angry Review Threat
+                    </button>
+                </div>
+
+                <div class="input-group" style="margin-top: 1.5rem;">
+                    <label for="customerMsg">Customer Message</label>
+                    <textarea id="customerMsg" placeholder="Type a message here..."></textarea>
+                </div>
+
+                <button class="btn-submit" onclick="submitRequest()" style="margin-top: 1rem; width: 100%;">
+                    <span id="btnText">Process Request with AI</span>
+                    <div id="btnSpinner" class="spinner" style="display: none;"></div>
+                </button>
+            </div>
+
+            <!-- AI Response Section -->
+            <div class="card response-card" id="responseCard">
+                <h2>AI Processing Outcome</h2>
+                <div class="response-header">
+                    <div class="resp-meta">
+                        <span class="badge badge-category" id="respCategory">Category</span>
+                        <span class="badge badge-status" id="respStatus">Status</span>
+                        <span class="badge badge-priority" id="respPriority">Priority</span>
+                    </div>
+                    <div id="respStaff" style="font-size: 0.8rem; color: var(--text-muted);">Assigned: Alice</div>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; font-weight: 500;">
+                    Action: <span id="respAction" style="color: var(--text-main)">...</span>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">AI-Generated Response:</span>
+                    <div class="response-text" id="respMessage">Response content goes here.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: System Monitor -->
+        <div class="monitor-section">
+            <div class="grid-stats">
+                <!-- Capacity Card -->
+                <div class="card capacity-card">
+                    <div class="capacity-number" id="slotsRemaining">3</div>
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Slots Remaining Today</div>
+                    <div class="slot-container" id="slotsContainer">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Active Bookings Card -->
+                <div class="card">
+                    <h2>Active Bookings</h2>
+                    <div class="active-bookings-list" id="bookingsContainer">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operations log -->
+            <div class="card logs-card">
+                <h2>Operations log & escalations</h2>
+                <div class="logs-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Category</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Assigned Staff</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        Booking Automation Backend Dashboard • Built with Python & Flask
+    </footer>
+
+    <script>
+        // Preset Scenarios
+        const SCENARIOS = {
+            1: "Hello, I am VIP customer John Doe. I need to cancel my booking for 02:00 PM today. Please process this.",
+            2: "Can I book the earliest available slot today? My name is Mark Smith, email mark.smith@example.com",
+            3: "Hi, I was charged twice. There was an extra charge on my bill for $35.00. Can I get a refund?",
+            4: "Hello, I have a duplicate charge on my credit card for $120.00. I need a refund immediately.",
+            5: "What are your standard prices? How much is the VIP package?",
+            6: "This is the worst customer service ever! If you don't call me back immediately, I am writing a negative Google review about your business!"
+        };
+
+        function fillMessage(id) {
+            document.getElementById("customerMsg").value = SCENARIOS[id];
+        }
+
+        // Fetch Live Database Status
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                // Update Slots Remaining
+                document.getElementById('slotsRemaining').innerText = data.remaining_slots.length;
+                
+                // Update Slot tags
+                const slotsContainer = document.getElementById('slotsContainer');
+                slotsContainer.innerHTML = '';
+                if (data.remaining_slots.length === 0) {
+                    slotsContainer.innerHTML = '<span style="font-size:0.75rem; color:var(--danger)">No slots left today</span>';
+                } else {
+                    data.remaining_slots.forEach(slot => {
+                        slotsContainer.innerHTML += `<span class="slot-tag">${slot}</span>`;
+                    });
+                }
+
+                // Update Active Bookings
+                const bookingsContainer = document.getElementById('bookingsContainer');
+                bookingsContainer.innerHTML = '';
+                if (data.active_bookings.length === 0) {
+                    bookingsContainer.innerHTML = '<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:1.5rem 0;">No active bookings today</div>';
+                } else {
+                    data.active_bookings.forEach(b => {
+                        bookingsContainer.innerHTML += `
+                            <div class="booking-item">
+                                <div class="booking-details">
+                                    <h4>${b.customer_name}</h4>
+                                    <p>${b.customer_email}</p>
+                                </div>
+                                <div class="booking-slot">${b.slot}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Update Requests Logs
+                const logsTableBody = document.getElementById('logsTableBody');
+                logsTableBody.innerHTML = '';
+                
+                if (data.requests_log.length === 0) {
+                    logsTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:2rem;">No request records found</td></tr>';
+                } else {
+                    // Sort descending to show newest first
+                    const reversedLogs = [...data.requests_log].reverse();
+                    reversedLogs.forEach(r => {
+                        // Badge formatting
+                        const statusStyle = getStatusBadgeStyle(r.status);
+                        const priorityStyle = getPriorityBadgeStyle(r.priority);
+                        
+                        let actionHtml = '';
+                        if (r.status === 'pending_staff_approval' && r.category === 'DUPLICATE_CHARGE') {
+                            actionHtml = `<button class="btn-approve" onclick="approveRefund(${r.id})">Approve Refund</button>`;
+                        } else {
+                            actionHtml = '<span style="color:var(--text-muted)">-</span>';
+                        }
+                        
+                        logsTableBody.innerHTML += `
+                            <tr>
+                                <td>${r.id}</td>
+                                <td><span class="badge badge-category">${r.category}</span></td>
+                                <td class="td-message" title="${r.message}">${r.message}</td>
+                                <td><span class="badge" style="${statusStyle}">${r.status.replace(/_/g, ' ')}</span></td>
+                                <td><span class="badge" style="${priorityStyle}">${r.priority}</span></td>
+                                <td style="color:${r.assigned_staff ? 'var(--text-main)' : 'var(--text-muted)'}">${r.assigned_staff || 'None'}</td>
+                                <td>${actionHtml}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching status:", err);
+            }
+        }
+
+        function getStatusBadgeStyle(status) {
+            switch(status) {
+                case 'cancelled_automatically':
+                case 'refund_auto_approved':
+                case 'refund_approved_by_staff':
+                    return `background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3);`;
+                case 'booked_automatically':
+                case 'auto_answered':
+                    return `background: rgba(59, 130, 246, 0.15); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.3);`;
+                case 'pending_staff_approval':
+                case 'escalated_to_staff':
+                    return `background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3);`;
+                case 'no_slots_available':
+                case 'no_booking_found':
+                    return `background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3);`;
+                default:
+                    return `background: rgba(255, 255, 255, 0.05); color: var(--text-main); border: 1px solid var(--border-color);`;
+            }
+        }
+
+        function getPriorityBadgeStyle(priority) {
+            if (priority === 'high') {
+                return `background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3);`;
+            } else {
+                return `background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border-color);`;
+            }
+        }
+
+        // Submit message to AI
+        async function submitRequest() {
+            const customerMsg = document.getElementById("customerMsg").value.trim();
+            if (!customerMsg) return;
+
+            const btnText = document.getElementById("btnText");
+            const btnSpinner = document.getElementById("btnSpinner");
+            
+            btnText.style.display = "none";
+            btnSpinner.style.display = "inline-block";
+
+            try {
+                const response = await fetch('/api/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: customerMsg })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById("respCategory").innerText = result.category;
+                    
+                    const statusBadge = document.getElementById("respStatus");
+                    statusBadge.innerText = result.status.replace(/_/g, ' ');
+                    statusBadge.style.cssText = getStatusBadgeStyle(result.status);
+
+                    const priorityBadge = document.getElementById("respPriority");
+                    priorityBadge.innerText = result.priority;
+                    priorityBadge.style.cssText = getPriorityBadgeStyle(result.priority);
+                    
+                    document.getElementById("respStaff").innerText = result.assigned_staff ? `Assigned: ${result.assigned_staff}` : 'Assigned: None';
+                    document.getElementById("respAction").innerText = result.action_taken;
+                    document.getElementById("respMessage").innerText = result.response_generated;
+                    
+                    document.getElementById("responseCard").style.display = "block";
+                    document.getElementById("customerMsg").value = "";
+                    
+                    // Refresh status logs
+                    fetchStatus();
+                } else {
+                    alert("Error processing request: " + result.error);
+                }
+            } catch (err) {
+                console.error("Error submitting request:", err);
+                alert("Failed to connect to the backend server.");
+            } finally {
+                btnText.style.display = "inline-block";
+                btnSpinner.style.display = "none";
+            }
+        }
+
+        // Approve refund manually
+        async function approveRefund(id) {
+            if (!confirm(`Are you sure you want to approve refund for Request ID #${id}?`)) return;
+            
+            try {
+                const response = await fetch(`/api/approve-refund/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    fetchStatus();
+                } else {
+                    alert("Approval failed: " + result.error);
+                }
+            } catch (err) {
+                console.error("Error approving refund:", err);
+                alert("Failed to submit approval.");
+            }
+        }
+
+        // Initial Load and Auto Refresh
+        fetchStatus();
+        setInterval(fetchStatus, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+flask==3.0.3
+openai==1.35.3
+python-dotenv==1.0.1
+httpx>=0.20.0
