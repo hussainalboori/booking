@@ -1,3 +1,4 @@
+import os
 import time
 import json
 import threading
@@ -6,11 +7,12 @@ import urllib.error
 from app import app
 
 # Constants for test URL
-BASE_URL = "http://127.0.0.1:5000"
+PORT = int(os.environ.get("PORT", 5000))
+BASE_URL = f"http://127.0.0.1:{PORT}"
 
 def run_server():
     """Run Flask server in background thread."""
-    app.run(host="127.0.0.1", port=5000, debug=False, use_reloader=False)
+    app.run(host="127.0.0.1", port=PORT, debug=False, use_reloader=False)
 
 def send_post(endpoint, data):
     """Utility to send POST requests using urllib."""
