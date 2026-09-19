@@ -78,6 +78,35 @@ def approve_refund(request_id):
         }
     })
 
+@app.route("/api/approve-cancellation/<int:request_id>", methods=["POST"])
+def approve_cancellation(request_id):
+    """Staff endpoint to review/waive fee for a non-VIP cancellation."""
+    target_req = None
+    for r in db.requests_log:
+        if r["id"] == request_id:
+            target_req = r
+            break
+            
+    if not target_req:
+        return jsonify({"error": "Request ID not found"}), 404
+        
+    if target_req["status"] not in ["cancelled_with_fee_review", "pending_staff_approval"]:
+        return jsonify({"error": f"Cancellation is not pending review. Current status: {target_req['status']}"}), 400
+        
+    target_req["status"] = "fee_waived_by_staff"
+    target_req["action_taken"] += " | Cancellation fee waived by staff."
+    target_req["response"] = "Hello. Our staff has reviewed your cancellation and agreed to waive the standard cancellation fee. Have a great day!"
+    
+    return jsonify({
+        "success": True,
+        "message": "Cancellation fee waiver approved successfully.",
+        "request": {
+            "id": target_req["id"],
+            "status": target_req["status"],
+            "action_taken": target_req["action_taken"]
+        }
+    })
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"Starting Booking Automation Server on port {port}...")

@@ -6,8 +6,8 @@ staff = [
     {"id": 2, "name": "Bob", "status": "available"}
 ]
 
-# 3 Appointment slots remaining today
-slots = ["02:00 PM", "03:30 PM", "05:00 PM"]
+# Slots available for booking today (initially empty because slots 02:00 PM, 03:30 PM, and 05:00 PM are already booked below)
+slots = []
 
 # VIP customer list (emails/names for matching)
 vip_customers = [
@@ -71,9 +71,15 @@ def reserve_slot(slot):
 
 def add_slot(slot):
     """Adds a slot back to the available list (e.g. on cancellation)."""
-    if slot not in slots:
+    if slot and slot not in slots:
         slots.append(slot)
-        slots.sort()  # Keep them ordered chronologically (approximate sorting)
+        def parse_time(t):
+            try:
+                import datetime
+                return datetime.datetime.strptime(t.strip(), "%I:%M %p")
+            except Exception:
+                return t
+        slots.sort(key=parse_time)
 
 def is_vip(name_or_email):
     """Checks if the customer is on the VIP list."""

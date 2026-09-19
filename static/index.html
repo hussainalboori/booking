@@ -622,6 +622,8 @@
                         let actionHtml = '';
                         if (r.status === 'pending_staff_approval' && r.category === 'DUPLICATE_CHARGE') {
                             actionHtml = `<button class="btn-approve" onclick="approveRefund(${r.id})">Approve Refund</button>`;
+                        } else if (r.status === 'cancelled_with_fee_review' || (r.status === 'pending_staff_approval' && (r.category === 'VIP_CANCELLATION' || r.category === 'CANCELLATION'))) {
+                            actionHtml = `<button class="btn-approve" onclick="approveCancellation(${r.id})">Waive Fee</button>`;
                         } else {
                             actionHtml = '<span style="color:var(--text-muted)">-</span>';
                         }
@@ -647,12 +649,14 @@
         function getStatusBadgeStyle(status) {
             switch(status) {
                 case 'cancelled_automatically':
+                case 'fee_waived_by_staff':
                 case 'refund_auto_approved':
                 case 'refund_approved_by_staff':
                     return `background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3);`;
                 case 'booked_automatically':
                 case 'auto_answered':
                     return `background: rgba(59, 130, 246, 0.15); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.3);`;
+                case 'cancelled_with_fee_review':
                 case 'pending_staff_approval':
                 case 'escalated_to_staff':
                     return `background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3);`;
@@ -743,6 +747,29 @@
             } catch (err) {
                 console.error("Error approving refund:", err);
                 alert("Failed to submit approval.");
+            }
+        }
+
+        // Approve cancellation fee waiver manually
+        async function approveCancellation(id) {
+            if (!confirm(`Are you sure you want to waive cancellation fee for Request ID #${id}?`)) return;
+            
+            try {
+                const response = await fetch(`/api/approve-cancellation/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    fetchStatus();
+                } else {
+                    alert("Waiver failed: " + result.error);
+                }
+            } catch (err) {
+                console.error("Error approving cancellation waiver:", err);
+                alert("Failed to submit waiver.");
             }
         }
 

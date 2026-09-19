@@ -21,7 +21,7 @@ def handle_request(message_text):
     }
     
     # 2. Routing to Handlers
-    if category == "VIP_CANCELLATION":
+    if category in ["VIP_CANCELLATION", "CANCELLATION"]:
         response_data = handle_vip_cancellation(ai_result, req_entry)
     elif category == "NEW_BOOKING":
         response_data = handle_new_booking(ai_result, req_entry)
@@ -41,48 +41,81 @@ def handle_request(message_text):
     return response_data
 
 def handle_vip_cancellation(ai_result, req_entry):
-    customer_name = ai_result.get("extracted_name") or "Valued VIP Customer"
+    customer_name = ai_result.get("extracted_name")
     customer_email = ai_result.get("extracted_email")
+    extracted_slot = ai_result.get("extracted_slot")
     
     # Check VIP list by name or email
-    is_vip_customer = db.is_vip(customer_name) or db.is_vip(customer_email)
+    is_vip_customer = (customer_name and db.is_vip(customer_name)) or (customer_email and db.is_vip(customer_email))
     
-    if is_vip_customer:
-        # Find their active booking
-        booking_to_cancel = None
+    # Find matching active booking
+    booking_to_cancel = None
+    
+    # 1. Match by email
+    if customer_email:
+        for b in db.bookings:
+            if b["status"] == "active" and b["customer_email"].lower() == customer_email.lower():
+                booking_to_cancel = b
+                break
+                
+    # 2. Match by customer name
+    if not booking_to_cancel and customer_name:
         for b in db.bookings:
             if b["status"] == "active" and (
-                (customer_email and b["customer_email"].lower() == customer_email.lower()) or
-                (customer_name and customer_name.lower() in b["customer_name"].lower())
+                customer_name.lower() in b["customer_name"].lower() or 
+                b["customer_name"].lower() in customer_name.lower()
             ):
                 booking_to_cancel = b
                 break
-        
-        # If no customer booking matched, try slot or cancel the earliest vip booking
-        if not booking_to_cancel:
-            for b in db.bookings:
-                if b["status"] == "active" and db.is_vip(b["customer_name"]):
-                    booking_to_cancel = b
-                    break
-        
-        if booking_to_cancel:
-            booking_to_cancel["status"] = "cancelled"
-            db.add_slot(booking_to_cancel["slot"])
+                
+    # 3. Match by time slot mentioned (e.g. 02:00 PM, 2:00, 5pm)
+    if not booking_to_cancel and extracted_slot:
+        clean_extracted = extracted_slot.lower().replace(" ", "").lstrip("0")
+        for b in db.bookings:
+            clean_b_slot = b["slot"].lower().replace(" ", "").lstrip("0")
+            if b["status"] == "active" and (clean_extracted in clean_b_slot or clean_b_slot in clean_extracted):
+                booking_to_cancel = b
+                break
+
+    # 4. Fallback if VIP customer didn't specify name/slot clearly
+    if not booking_to_cancel and is_vip_customer:
+        for b in db.bookings:
+            if b["status"] == "active" and db.is_vip(b["customer_name"]):
+                booking_to_cancel = b
+                break
+
+    # 5. If only one active booking remains and cancellation was asked
+    if not booking_to_cancel:
+        active_bookings = [b for b in db.bookings if b["status"] == "active"]
+        if len(active_bookings) == 1:
+            booking_to_cancel = active_bookings[0]
+
+    # Process cancellation if booking found
+    if booking_to_cancel:
+        # Check VIP status of the found booking if not already detected
+        if not is_vip_customer:
+            is_vip_customer = db.is_vip(booking_to_cancel["customer_name"]) or db.is_vip(booking_to_cancel["customer_email"])
+
+        # Mark booking as cancelled and release slot
+        booking_to_cancel["status"] = "cancelled"
+        db.add_slot(booking_to_cancel["slot"])
+
+        if is_vip_customer:
             req_entry["status"] = "cancelled_automatically"
-            req_entry["action_taken"] = f"Auto-cancelled slot {booking_to_cancel['slot']} for VIP {booking_to_cancel['customer_name']}"
+            req_entry["action_taken"] = f"Auto-cancelled slot {booking_to_cancel['slot']} for VIP {booking_to_cancel['customer_name']}. Slot is now open."
             req_entry["response"] = f"Hi {booking_to_cancel['customer_name']}. We have successfully cancelled your appointment at {booking_to_cancel['slot']} today, free of charge. Your VIP status guarantees free cancellations. Have a nice day!"
         else:
-            req_entry["status"] = "no_booking_found"
-            req_entry["action_taken"] = "VIP cancellation requested but no active booking was found."
-            req_entry["response"] = f"Hi {customer_name}. We received your cancellation request, but could not find an active booking for you today. Please contact us directly if you believe this is an error."
+            staff_name = db.assign_staff_member()
+            req_entry["status"] = "cancelled_with_fee_review"
+            req_entry["assigned_staff"] = staff_name
+            req_entry["priority"] = "normal"
+            req_entry["action_taken"] = f"Cancelled slot {booking_to_cancel['slot']} for {booking_to_cancel['customer_name']}. Slot is now open. Flagged for standard fee ($25) review."
+            req_entry["response"] = f"Hi {booking_to_cancel['customer_name']}. Your appointment at {booking_to_cancel['slot']} has been cancelled and the slot has been reopened. Standard cancellation fee ($25) applies unless exempt. Our staff member {staff_name} will review your account."
     else:
-        # Non-VIP cancellation requested
-        staff_name = db.assign_staff_member()
-        req_entry["status"] = "pending_staff_approval"
-        req_entry["assigned_staff"] = staff_name
-        req_entry["priority"] = "high"
-        req_entry["action_taken"] = f"Non-VIP cancellation requested. Flagged for standard cancellation fee review."
-        req_entry["response"] = f"Hi. Since you are not registered on our VIP list, standard cancellation policies apply. We have flagged your request for review by our staff member {staff_name} to verify fee exemptions."
+        req_entry["status"] = "no_booking_found"
+        req_entry["action_taken"] = "Cancellation requested but no matching active booking was found."
+        display_name = customer_name or "there"
+        req_entry["response"] = f"Hi {display_name}. We received your cancellation request, but could not find an active booking for you today. Please contact us directly if you believe this is an error."
         
     db.requests_log.append(req_entry)
     return req_entry
