@@ -566,6 +566,16 @@
             document.getElementById("customerMsg").value = SCENARIOS[id];
         }
 
+        // Escape untrusted values (customer messages, names, emails) before inserting into innerHTML
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         // Fetch Live Database Status
         async function fetchStatus() {
             try {
@@ -582,7 +592,7 @@
                     slotsContainer.innerHTML = '<span style="font-size:0.75rem; color:var(--danger)">No slots left today</span>';
                 } else {
                     data.remaining_slots.forEach(slot => {
-                        slotsContainer.innerHTML += `<span class="slot-tag">${slot}</span>`;
+                        slotsContainer.innerHTML += `<span class="slot-tag">${escapeHtml(slot)}</span>`;
                     });
                 }
 
@@ -596,10 +606,10 @@
                         bookingsContainer.innerHTML += `
                             <div class="booking-item">
                                 <div class="booking-details">
-                                    <h4>${b.customer_name}</h4>
-                                    <p>${b.customer_email}</p>
+                                    <h4>${escapeHtml(b.customer_name)}</h4>
+                                    <p>${escapeHtml(b.customer_email)}</p>
                                 </div>
-                                <div class="booking-slot">${b.slot}</div>
+                                <div class="booking-slot">${escapeHtml(b.slot)}</div>
                             </div>
                         `;
                     });
@@ -631,11 +641,11 @@
                         logsTableBody.innerHTML += `
                             <tr>
                                 <td>${r.id}</td>
-                                <td><span class="badge badge-category">${r.category}</span></td>
-                                <td class="td-message" title="${r.message}">${r.message}</td>
-                                <td><span class="badge" style="${statusStyle}">${r.status.replace(/_/g, ' ')}</span></td>
-                                <td><span class="badge" style="${priorityStyle}">${r.priority}</span></td>
-                                <td style="color:${r.assigned_staff ? 'var(--text-main)' : 'var(--text-muted)'}">${r.assigned_staff || 'None'}</td>
+                                <td><span class="badge badge-category">${escapeHtml(r.category)}</span></td>
+                                <td class="td-message" title="${escapeHtml(r.message)}">${escapeHtml(r.message)}</td>
+                                <td><span class="badge" style="${statusStyle}">${escapeHtml(r.status.replace(/_/g, ' '))}</span></td>
+                                <td><span class="badge" style="${priorityStyle}">${escapeHtml(r.priority)}</span></td>
+                                <td style="color:${r.assigned_staff ? 'var(--text-main)' : 'var(--text-muted)'}">${escapeHtml(r.assigned_staff || 'None')}</td>
                                 <td>${actionHtml}</td>
                             </tr>
                         `;

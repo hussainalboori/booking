@@ -10,6 +10,7 @@ It features a premium dark-mode web dashboard allowing users to submit requests,
 - `request_handlers.py`: Business logic routing for the 5 target scenarios.
 - `app.py`: Flask API exposing endpoints for request submission, dashboard status, and staff manual approvals.
 - `test_scenarios.py`: Orchestrates mock traffic to cover and verify all 5 test scenarios.
+- `test_booking.py`: Unit tests for booking, cancellation, classification and API validation.
 - `static/index.html`: Premium single-page web dashboard interface.
 
 ## Setup & Local Execution
@@ -52,4 +53,10 @@ Open `http://127.0.0.1:5000` in your web browser to open the dashboard!
 Run the full simulation covering the 5 customer scenarios and the staff manual approval endpoint:
 ```bash
 python3 test_scenarios.py
+```
+
+### Running Unit Tests
+Offline unit tests (rule-based classifier, booking/cancellation logic, API validation):
+```bash
+python3 -m unittest test_booking
 ```
